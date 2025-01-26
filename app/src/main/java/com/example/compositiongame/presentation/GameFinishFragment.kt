@@ -11,13 +11,13 @@ import com.example.compositiongame.R
 import com.example.compositiongame.databinding.FragmentGameFinishedBinding
 import com.example.compositiongame.domain.entities.GameResult
 
-class GameFinishFragment: Fragment() {
+class GameFinishFragment : Fragment() {
 
     private var _binding: FragmentGameFinishedBinding? = null
     private val binding: FragmentGameFinishedBinding
         get() = _binding ?: throw RuntimeException("FragmentGameFinishedBinding == null")
 
-    private var gameResult: GameResult? = null
+    private lateinit var gameResult: GameResult
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,17 +47,43 @@ class GameFinishFragment: Fragment() {
         binding.buttonRetry.setOnClickListener {
             launchChooseLevelFragment()
         }
+
+        val emojiImgResId = if (gameResult.success) {
+            R.drawable.ic_smile
+        } else {
+            R.drawable.ic_sad
+        }
+        binding.emojiResult.setImageResource(emojiImgResId)
+
+        binding.tvRequiredAnswers.text = getString(
+            R.string.required_score,
+            gameResult.gameSettings.minCountOfRightAnswers.toString()
+        )
+        binding.tvScoreAnswers.text =
+            getString(R.string.score_answers, gameResult.countOfRightAnswers.toString())
+        binding.tvRequiredPercentage.text = getString(
+            R.string.required_percentage,
+            gameResult.gameSettings.minAccuracy.toString()
+        )
+
+        val percent = with(gameResult) {
+            if (countOfRightAnswers == 0) 0
+            else {
+                ((countOfRightAnswers / countOfQuestions.toDouble()) * 100).toInt()
+            }
+        }
+        binding.tvScorePercentage.text = getString(R.string.score_percentage, percent.toString())
     }
 
     private fun setupBackButton() {
-        requireActivity().onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+        requireActivity().onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 retryGame()
             }
         })
     }
 
-    private fun launchChooseLevelFragment(){
+    private fun launchChooseLevelFragment() {
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.main_container, ChooseLevelFragment.newInstance())
             .addToBackStack(null)
@@ -66,7 +92,10 @@ class GameFinishFragment: Fragment() {
 
     private fun retryGame() {
         //returning to chooseLevelFragment in the stack, skipping all game fragments
-        requireActivity().supportFragmentManager.popBackStack(GameFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        requireActivity().supportFragmentManager.popBackStack(
+            GameFragment.NAME,
+            FragmentManager.POP_BACK_STACK_INCLUSIVE
+        )
     }
 
     override fun onDestroy() {

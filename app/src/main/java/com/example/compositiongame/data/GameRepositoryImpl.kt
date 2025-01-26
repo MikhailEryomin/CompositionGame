@@ -45,7 +45,7 @@ object GameRepositoryImpl: GameRepository {
         if (maxSum <= 0) throw RuntimeException("maxSum cannot be <=0")
 
         val sum = (MIN_SUM_VALUE..maxSum).random()
-        val visibleNumber = (MIN_ANSWER_VALUE..maxSum).random()
+        val visibleNumber = (MIN_ANSWER_VALUE..sum).random()
         val options = HashSet<Int>()
 
         val rightAnswer = sum - visibleNumber
@@ -54,7 +54,7 @@ object GameRepositoryImpl: GameRepository {
         val from = max(rightAnswer - countOfOptions, MIN_ANSWER_VALUE)
         val to = min(maxSum, rightAnswer + countOfOptions)
 
-        repeat(countOfOptions - 1) {
+        while(options.size < countOfOptions) {
             val randomNumber = (from..to).random()
             options.add(randomNumber)
         }
