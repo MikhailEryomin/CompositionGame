@@ -10,14 +10,17 @@ import androidx.fragment.app.FragmentManager
 import com.example.compositiongame.R
 import com.example.compositiongame.databinding.FragmentGameFinishedBinding
 import com.example.compositiongame.domain.entities.GameResult
+import com.example.compositiongame.domain.entities.GameSettings
 
-class GameFinishFragment: Fragment() {
+class GameFinishFragment : Fragment() {
 
     private var _binding: FragmentGameFinishedBinding? = null
     private val binding: FragmentGameFinishedBinding
-        get() = _binding ?: throw RuntimeException("FragmentGameFinishedBinding == null")
+        get() = _binding ?: throw RuntimeException("FragmentGameFinishedBinding = null")
 
-    private var gameResult: GameResult? = null
+    private var _gameResult: GameResult? = null
+    private val gameResult: GameResult
+        get() = _gameResult ?: throw RuntimeException("gameResult = null")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,7 +28,7 @@ class GameFinishFragment: Fragment() {
     }
 
     private fun parseArgs() {
-        gameResult = requireArguments().getSerializable(KEY_GAME_RESULT) as GameResult
+        _gameResult = requireArguments().getParcelable(KEY_GAME_RESULT)
     }
 
     override fun onCreateView(
@@ -44,29 +47,32 @@ class GameFinishFragment: Fragment() {
     }
 
     private fun setupViews() {
+        val success = gameResult.success
+        val gameSettings = gameResult.gameSettings
+        binding.emojiResult.setImageResource(if (success) R.drawable.ic_smile else R.drawable.ic_sad)
+        binding.tvRequiredAnswers.text = getString(R.string.required_score, gameSettings.minCountOfRightAnswers.toString())
+        binding.tvScoreAnswers.text = getString(R.string.score_answers, gameResult.countOfRightAnswers.toString())
+        binding.tvRequiredPercentage.text = getString(R.string.required_percentage, gameSettings.minAccuracy.toString())
+        binding.tvScorePercentage.text = getString(R.string.score_percentage, gameResult.progress.toString())
         binding.buttonRetry.setOnClickListener {
-            launchChooseLevelFragment()
+            retryGame()
         }
     }
 
     private fun setupBackButton() {
-        requireActivity().onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+        requireActivity().onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 retryGame()
             }
         })
     }
 
-    private fun launchChooseLevelFragment(){
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.main_container, ChooseLevelFragment.newInstance())
-            .addToBackStack(null)
-            .commit()
-    }
-
     private fun retryGame() {
         //returning to chooseLevelFragment in the stack, skipping all game fragments
-        requireActivity().supportFragmentManager.popBackStack(GameFragment.NAME, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        requireActivity().supportFragmentManager.popBackStack(
+            GameFragment.NAME,
+            FragmentManager.POP_BACK_STACK_INCLUSIVE
+        )
     }
 
     override fun onDestroy() {
@@ -81,7 +87,7 @@ class GameFinishFragment: Fragment() {
         fun newInstance(gameResult: GameResult): GameFinishFragment {
             return GameFinishFragment().apply {
                 arguments = Bundle().apply {
-                    putSerializable(KEY_GAME_RESULT, gameResult)
+                    putParcelable(KEY_GAME_RESULT, gameResult)
                 }
             }
         }
