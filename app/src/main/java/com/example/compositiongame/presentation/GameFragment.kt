@@ -1,7 +1,6 @@
 package com.example.compositiongame.presentation
 
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,17 +9,18 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.compositiongame.R
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.compositiongame.databinding.FragmentGameBinding
 import com.example.compositiongame.domain.entities.GameResult
-import com.example.compositiongame.domain.entities.GameSettings
-import com.example.compositiongame.domain.entities.Level
 
 class GameFragment : Fragment() {
 
-    private lateinit var level: Level
+    //jetpack navigation
+    private val args by navArgs<GameFragmentArgs>()
+
     private val viewModelFactory by lazy {
-        GameViewModelFactory(requireActivity().application, level)
+        GameViewModelFactory(requireActivity().application, args.level)
     }
     private val viewModel by lazy {
         ViewModelProvider(
@@ -42,11 +42,6 @@ class GameFragment : Fragment() {
             add(binding.tvOption5)
             add(binding.tvOption6)
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        parseArguments()
     }
 
     override fun onCreateView(
@@ -116,38 +111,12 @@ class GameFragment : Fragment() {
     }
 
     private fun launchGameResultFragment(gameResult: GameResult) {
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(
-                R.id.main_container,
-                //random values!!!! just for testing
-                GameFinishFragment.newInstance(gameResult)
-            )
-            .addToBackStack(null)
-            .commit()
+        findNavController().navigate(GameFragmentDirections.actionGameFragmentToGameFinishFragment(gameResult))
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-    }
-
-    private fun parseArguments() {
-        level = requireArguments().getSerializable(KEY_LEVEL) as Level
-    }
-
-    companion object {
-
-        const val NAME = "GameFragment"
-        private const val KEY_LEVEL = "key_level"
-
-        fun newInstance(level: Level): GameFragment {
-            return GameFragment().apply {
-                arguments = Bundle().apply {
-                    putSerializable(KEY_LEVEL, level)
-                }
-            }
-        }
-
     }
 
 }

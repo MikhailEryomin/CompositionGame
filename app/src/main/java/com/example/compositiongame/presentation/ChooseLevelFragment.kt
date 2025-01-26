@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import com.example.compositiongame.R
+import androidx.navigation.fragment.findNavController
 import com.example.compositiongame.databinding.FragmentChooseLevelBinding
 import com.example.compositiongame.domain.entities.Level
 
-class ChooseLevelFragment: Fragment() {
+class ChooseLevelFragment : Fragment() {
 
     private var _binding: FragmentChooseLevelBinding? = null
     private val binding: FragmentChooseLevelBinding
@@ -33,27 +33,17 @@ class ChooseLevelFragment: Fragment() {
         binding.buttonLevelTest.setOnClickListener { launchLevel(Level.TEST) }
         binding.buttonLevelEasy.setOnClickListener { launchLevel(Level.EASY) }
         binding.buttonLevelNormal.setOnClickListener { launchLevel(Level.NORMAL) }
-        binding.buttonLevelHard .setOnClickListener { launchLevel(Level.HARD) }
+        binding.buttonLevelHard.setOnClickListener { launchLevel(Level.HARD) }
     }
 
     private fun launchLevel(level: Level) {
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.main_container, GameFragment.newInstance(level))
-            .addToBackStack(GameFragment.NAME)
-            .commit()
+        findNavController().navigate(
+            ChooseLevelFragmentDirections.actionChooseLevelFragmentToGameFragment(level)
+        )
     }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-    }
-
-    companion object {
-
-        const val NAME = "ChooseLevelFragment"
-
-        fun newInstance(): ChooseLevelFragment {
-            return ChooseLevelFragment()
-        }
     }
 }
