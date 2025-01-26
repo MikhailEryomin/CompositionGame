@@ -2,6 +2,7 @@ package com.example.compositiongame.presentation
 
 import android.app.Application
 import android.os.CountDownTimer
+import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,12 +17,13 @@ import com.example.compositiongame.domain.usecases.GenerateQuestionUseCase
 import com.example.compositiongame.domain.usecases.GetGameSettingsUseCase
 import kotlin.math.min
 
-class GameViewModel(application: Application) : AndroidViewModel(application) {
+class GameViewModel(
+    private val application: Application,
+    private val level: Level
+) : ViewModel() {
 
     private lateinit var gameSettings: GameSettings
-    private lateinit var level: Level
 
-    private val context = application
     private val repository = GameRepositoryImpl
 
     private val generateQuestionUseCase = GenerateQuestionUseCase(repository)
@@ -63,7 +65,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private var countOfQuestions = 0
     private var countOfRightAnswers = 0
 
-    fun startGame(level: Level) {
+    init {
+        startGame()
+    }
+
+    private fun startGame() {
         getGameSettings(level)
         startTimer()
         generateQuestion()
@@ -85,7 +91,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun getGameSettings(level: Level) {
-        this.level = level
         this.gameSettings = getGameSettingsUseCase(level)
         _minPercent.value = gameSettings.minAccuracy
     }
@@ -123,7 +128,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val percent = calculateProgress()
         _percentOfRightAnswers.value = percent
         _progressAnswers.value = String.format(
-            context.resources.getString(R.string.progress_answers),
+            application.resources.getString(R.string.progress_answers),
             countOfRightAnswers.toString(),
             gameSettings.minCountOfRightAnswers.toString()
         )
