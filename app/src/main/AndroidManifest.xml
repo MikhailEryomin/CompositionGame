@@ -13,8 +13,8 @@
         android:theme="@style/Theme.CompositionGame"
         tools:targetApi="31" >
 
-        <activity android:name=".MainActivity"
-            android:exported="true" >
+        <activity android:name=".presentation.MainActivity"
+            android:exported="true" android:screenOrientation="fullSensor">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
